@@ -483,6 +483,8 @@ console.log("Time to generate pizzas on load: " + timeToGenerate[0].duration + "
 // Iterator for number of times the pizzas in the background have scrolled.
 // Used by updatePositions() to decide when to log the average time per frame
 var frame = 0;
+
+// variable to store reference to all moving pizzas
 var movingPizzas;
 
 // Logs the average amount of time per 10 frames needed to move the sliding background pizzas on scroll.
@@ -501,28 +503,35 @@ function logAverageFrame(times) {   // times is the array of User Timing measure
 // Moves the sliding background pizzas based on scroll position
 function updatePositions() {
 
+
+    console.log( 'update' );
+
     frame++;
 
     window.performance.mark("mark_start_frame");
 
+    // create references to variables used in for loop that only need to be
+    // calculated once
     var h = window.innerHeight,
         angle = document.body.scrollTop / 1250,
         phases = [],
         phaseCount = 0;
 
+    // phases only has 5 distinct values since it is calculated with modulus % operator
+    // calculate them now instead of recalculating in the for loop
     for( var j = 0; j < 5; j++ ) {
         phases.push( Math.sin( angle + (j % 5) ) );
     }
 
     for (var i = 0; i < movingPizzas.length; i++) {
 
+        // only update the position if the pizza is within the view
+        // using top style ended up being the quickest way to get this info.
         if( movingPizzas[i].style.top.replace('px','') < h  ) {
 
             movingPizzas[i].style.left = movingPizzas[i].basicLeft + 100 * phases[phaseCount++] + 'px';
 
-            if( phaseCount == phases.length - 1 ) {
-                phaseCount = 0;
-            }
+            phaseCount = ( phaseCount == phases.length - 1 ) ? 0 : phaseCount;
 
         }
 
@@ -542,6 +551,8 @@ function updatePositions() {
 window.addEventListener('scroll', updatePositions);
 
 // Generates the sliding pizzas when the page loads.
+// changed number of pizzas from 200 to 75.
+// change pizza image to optimized png
 document.addEventListener('DOMContentLoaded', function() {
   var cols = 8;
   var s = 256;
@@ -556,7 +567,13 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector("#movingPizzas1").appendChild(elem);
   }
 
+  // store reference to pizzas for future use
   movingPizzas = document.getElementsByClassName('mover');
 
   updatePositions();
 });
+
+// update positions if window is resized. This is needed because
+// pizzas are only updated if they are viewable.  Resize event might
+// make pizzas viewable that were not viewable before the resize.
+window.addEventListener('resize', updatePositions );
