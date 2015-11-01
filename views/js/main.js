@@ -484,6 +484,9 @@ console.log("Time to generate pizzas on load: " + timeToGenerate[0].duration + "
 // Used by updatePositions() to decide when to log the average time per frame
 var frame = 0;
 
+// variable to store reference to all moving pizzas
+var movingPizzas;
+
 // Logs the average amount of time per 10 frames needed to move the sliding background pizzas on scroll.
 function logAverageFrame(times) {   // times is the array of User Timing measurements from updatePositions()
   var numberOfEntries = times.length;
@@ -499,14 +502,40 @@ function logAverageFrame(times) {   // times is the array of User Timing measure
 
 // Moves the sliding background pizzas based on scroll position
 function updatePositions() {
-  frame++;
-  window.performance.mark("mark_start_frame");
 
-  var items = document.querySelectorAll('.mover');
-  for (var i = 0; i < items.length; i++) {
-    var phase = Math.sin((document.body.scrollTop / 1250) + (i % 5));
-    items[i].style.left = items[i].basicLeft + 100 * phase + 'px';
-  }
+
+    console.log( 'update' );
+
+    frame++;
+
+    window.performance.mark("mark_start_frame");
+
+    // create references to variables used in for loop that only need to be
+    // calculated once
+    var h = window.innerHeight,
+        angle = document.body.scrollTop / 1250,
+        phases = [],
+        phaseCount = 0;
+
+    // phases only has 5 distinct values since it is calculated with modulus % operator
+    // calculate them now instead of recalculating in the for loop
+    for( var j = 0; j < 5; j++ ) {
+        phases.push( Math.sin( angle + (j % 5) ) );
+    }
+
+    for (var i = 0; i < movingPizzas.length; i++) {
+
+        // only update the position if the pizza is within the view
+        // using top style ended up being the quickest way to get this info.
+        if( movingPizzas[i].style.top.replace('px','') < h  ) {
+
+            movingPizzas[i].style.left = movingPizzas[i].basicLeft + 100 * phases[phaseCount++] + 'px';
+
+            phaseCount = ( phaseCount == phases.length - 1 ) ? 0 : phaseCount;
+
+        }
+
+    }
 
   // User Timing API to the rescue again. Seriously, it's worth learning.
   // Super easy to create custom metrics.
@@ -522,18 +551,29 @@ function updatePositions() {
 window.addEventListener('scroll', updatePositions);
 
 // Generates the sliding pizzas when the page loads.
+// changed number of pizzas from 200 to 75.
+// change pizza image to optimized png
 document.addEventListener('DOMContentLoaded', function() {
   var cols = 8;
   var s = 256;
-  for (var i = 0; i < 200; i++) {
+  for (var i = 0; i < 75; i++) {
     var elem = document.createElement('img');
     elem.className = 'mover';
-    elem.src = "images/pizza.png";
+    elem.src = "images/pizza-8.png";
     elem.style.height = "100px";
     elem.style.width = "73.333px";
     elem.basicLeft = (i % cols) * s;
     elem.style.top = (Math.floor(i / cols) * s) + 'px';
     document.querySelector("#movingPizzas1").appendChild(elem);
   }
+
+  // store reference to pizzas for future use
+  movingPizzas = document.getElementsByClassName('mover');
+
   updatePositions();
 });
+
+// update positions if window is resized. This is needed because
+// pizzas are only updated if they are viewable.  Resize event might
+// make pizzas viewable that were not viewable before the resize.
+window.addEventListener('resize', updatePositions );
