@@ -433,7 +433,7 @@ var resizePizzas = function(size) {
  */
 function changeSliderLabel(size) {
 
-    // moved the update of th innerHTML to after the switch statement.
+    // moved the update of the innerHTML to after the switch statement.
 
     var label;
 
