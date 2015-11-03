@@ -472,8 +472,6 @@ function changeSliderLabel(size) {
  */
 function determineDx (elem, size, windowwidth) {
 
-    console.log( windowwidth );
-
     // changed windowwidth to a previously calculated variable
     // that is passed as a variable.
 
@@ -530,8 +528,10 @@ function changePizzaSizes(size) {
 window.performance.mark("mark_start_generating"); // collect timing data
 
 // This for-loop actually creates and appends all of the pizzas when the page loads
+// moved the pizzasDiv declaration outside the for loop.
+var pizzasDiv = document.getElementById("randomPizzas");
+
 for (var i = 2; i < 100; i++) {
-  var pizzasDiv = document.getElementById("randomPizzas");
   pizzasDiv.appendChild(pizzaElementGenerator(i));
 }
 
@@ -615,23 +615,34 @@ window.addEventListener('scroll', updatePositions);
 // changed number of pizzas from 200 to 75.
 // change pizza image to optimized png
 document.addEventListener('DOMContentLoaded', function() {
-  var cols = 8;
-  var s = 256;
-  for (var i = 0; i < 75; i++) {
-    var elem = document.createElement('img');
-    elem.className = 'mover';
-    elem.src = "images/pizza-8.png";
-    elem.style.height = "100px";
-    elem.style.width = "73.333px";
-    elem.basicLeft = (i % cols) * s;
-    elem.style.top = (Math.floor(i / cols) * s) + 'px';
-    document.querySelector("#movingPizzas1").appendChild(elem);
-  }
 
-  // store reference to pizzas for future use
-  movingPizzas = document.getElementsByClassName('mover');
+    // changed variable names to be more descriptive.
+    // moved calculations outside of for loop
+    // calculate number of pizzas to generate based on screen height.
 
-  updatePositions();
+    var pizzasPerRow = 8,
+        distanceBetweenRows = 256,
+        elem,
+        movingPizzas1 = document.getElementById("movingPizzas1"),
+        screenHeight = window.screen.height,
+        numberOfPizzas = ( screenHeight / distanceBetweenRows ) * pizzasPerRow;
+
+    for (var i = 0; i < numberOfPizzas; i++) {
+        elem = document.createElement('img');
+        elem.className = 'mover';
+        elem.src = "images/pizza-8.png";
+        elem.style.height = "100px";
+        elem.style.width = "73.333px";
+        elem.basicLeft = (i % pizzasPerRow) * distanceBetweenRows;
+        elem.style.top = (Math.floor(i / pizzasPerRow) * distanceBetweenRows) + 'px';
+        movingPizzas1.appendChild(elem);
+    }
+
+    // store reference to pizzas for future use
+    movingPizzas = document.getElementsByClassName('mover');
+
+    updatePositions();
+
 });
 
 // update positions if window is resized. This is needed because
