@@ -620,12 +620,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // moved calculations outside of for loop
     // calculate number of pizzas to generate based on screen height.
 
-    var pizzasPerRow = 8,
+    var elem,
+        pizzasPerRow = 8,
         distanceBetweenRows = 256,
-        elem,
         movingPizzas1 = document.getElementById("movingPizzas1"),
         screenHeight = window.screen.height,
-        numberOfPizzas = ( screenHeight / distanceBetweenRows ) * pizzasPerRow;
+        numberOfPizzas = Math.floor( screenHeight / distanceBetweenRows ) * pizzasPerRow;
 
     for (var i = 0; i < numberOfPizzas; i++) {
         elem = document.createElement('img');
